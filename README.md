@@ -22,9 +22,9 @@ Available nodes are:
 * ha-discovery-in
 * ha-discovery-out
 
-Support components:
-* switch (esphome)
-* sensor (esphome, zigbee2mqtt)
+Support components (list test):
+* switch (ESPHome)
+* sensor (ESPHome, Zigbee2MQTT)
 
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/flow.png">
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/server.png">

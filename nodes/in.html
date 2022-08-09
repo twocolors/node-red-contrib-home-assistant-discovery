@@ -1,0 +1,95 @@
+<script type='text/javascript'>
+  RED.nodes.registerType('ha-discovery-in', {
+    category: 'discovery',
+    color: 'darksalmon',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'ha-discovery', required: true },
+      dev_id: { value: null, required: true },
+      uniq_id: { value: null },
+      start: { value: true, required: true },
+      filter: { value: false, required: true },
+    },
+    inputs: 0,
+    outputs: 1,
+    outputLabels: ['value'],
+    paletteLabel: 'in',
+    align: 'left',
+    icon: 'font-awesome/fa-cube',
+    label: function () {
+      return (this.name || 'discovery');
+    },
+    oneditprepare: function () {
+      let node = this;
+      setTimeout(() => {
+        new DiscoveryEditor(node).build();
+      }, 250);
+    },
+    oneditsave: function () {
+      this.dev_id  = $('#node-input-dev_id').val();
+      this.uniq_id = $('#node-input-uniq_id').val();
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="ha-discovery-in">
+  <link rel="stylesheet" href="ha-discovery/css/common.css" type="text/css" />
+
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-input-server" placeholder="Server">
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-dev_id"><i class="fa fa-crosshairs"></i> Device</label>
+    <select id="node-input-dev_id" disabled></select>
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-uniq_id"><i class="fa fa-tag"></i> Component</label>
+    <select id="node-input-uniq_id" disabled></select>
+  </div>
+
+  <div class="form-row">
+    <label for="force-refresh"><i class="fa fa-refresh"></i> Refresh</label>
+    <a class="red-ui-button ha-discovery-width" id="force-refresh" name="force-refresh"><span>Refresh Devices List</span></a>
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-start""><i class="fa fa-share-square"></i> Start</label>
+    <input type="checkbox" id="node-input-start" placeholder="Start" style="display: inline-block; width: auto; vertical-align: top;"><span> Send value on start</span>
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-filter""><i class="fa fa-share-square"></i> Filter</label>
+    <input type="checkbox" id="node-input-filter" placeholder="Filter" style="display: inline-block; width: auto; vertical-align: top;"><span> Send only if value changes</span>
+  </div>
+
+  <div class="form-tips">
+    <b>Important:</b> deploy server node to get devices list
+  </div>
+</script>
+
+<script type="text/html" data-help-name="ha-discovery-in">
+  <p>This node listens for mqtt messages sent from your MQTT Discovery broker.</p>
+  <h3>Configuration</h3>
+  <dl class="message-properties">
+    <dt>Server <span class="property-type">object</span></dt><dd>choose the mqtt server instance to use</dd>
+    <dt>Device <span class="property-type">string</span></dt><dd>select device to listen to</dd>
+    <dt>Component <span class="property-type">string | object</span></dt><dd>select device component to listen to</dd>
+    <dt class="optional">Start <span class="property-type">boolean</span></dt><dd>output state at startup</dd>
+    <dt class="optional">Filter <span class="property-type">boolean</span></dt><dd>send only if value changes</dd>
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+    <dt>payload <span class="property-type">string | object</span></dt><dd>current value depends on output component settings formatting</dd>
+    <dt>payload_raw <span class="property-type">sobject</span></dt><dd>data as it is</dd>
+    <dt>device<span class="property-type">object</span></dt><dd>device info</dd>
+  </dl>
+</script>

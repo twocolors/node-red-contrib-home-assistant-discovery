@@ -1,0 +1,35 @@
+{
+  "author": "D",
+  "license": "GPL",
+  "name": "node-red-contrib-home-assistant-discovery",
+  "description": "Nodes for controlling Home Assistant MQTT Discovery devices in Node-RED",
+  "version": "0.0.1",
+  "node-red": {
+    "version": ">=2.2.0",
+    "nodes": {
+      "api": "api.js",
+      "config": "nodes/config.js",
+      "in": "nodes/in.js",
+      "out": "nodes/out.js"
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/twocolors/node-red-contrib-home-assistant-discovery/issues"
+  },
+  "homepage": "https://github.com/twocolors/node-red-contrib-home-assistant-discovery",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twocolors/node-red-contrib-home-assistant-discovery"
+  },
+  "keywords": [
+    "node-red",
+    "mqtt",
+    "discovery",
+    "home assistant",
+    "home",
+    "assistant"
+  ],
+  "engines": {
+    "node": ">=14"
+  }
+}

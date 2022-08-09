@@ -1,0 +1,42 @@
+<script type="text/javascript">
+  RED.nodes.registerType('ha-discovery', {
+    category: 'config',
+    defaults: {
+      name: { value: '' },
+      server: { value: '', type: 'mqtt-broker', required: true },
+      topic: { value: 'homeassistant/#', required: true }
+    },
+    label: function () {
+      return (this.name || 'Discovery');
+    }
+  });
+</script>
+
+<script type="text/html" data-template-name="ha-discovery">
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name">
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-config-input-server" placeholder="Server">
+  </div>
+
+  <div class="form-row">
+    <label for="node-config-input-topic"><i class="fa fa-tasks"></i> Topic</label>
+    <input type="text" id="node-config-input-topic" placeholder="Topic">
+  </div>
+
+  <div class="form-tips">
+    <b>Important:</b> deploy server node to get devices list
+  </div>
+</script>
+
+<script type="text/html" data-help-name="ha-discovery">
+  <p>Configuration for a connection to an MQTT Discovery broker.</p>
+  <dl class="message-properties">
+    <dt>Topic <span class="property-type">string</span></dt>
+    <dd>the MQTT topic where MQTT Discovery</dd>
+  </dl>
+</script>

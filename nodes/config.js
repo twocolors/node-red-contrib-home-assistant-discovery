@@ -2,6 +2,8 @@ module.exports = function (RED) {
   "use strict";
 
   const Helper = require("../lib/discovery-helper");
+  const Sensor = require("../lib/component/sensor");
+  const Switch = require("../lib/component/switch");
 
   function HADiscovery(config) {
     RED.nodes.createNode(this, config);
@@ -67,24 +69,6 @@ module.exports = function (RED) {
       return node.devices_values[device?.avty_t] ?? null;
     };
 
-    let setValue = (device) => {
-      let re_json = /^{{\s*?value_json\.([\w|-|\.]+)\s*?}}$/i;
-      let payload = {};
-
-      // sensor or switch
-      if (device.component == "sensor" || device.component == "switch") {
-        // "val_tpl": "{{ value_json.contact }}"
-        if ("val_tpl" in device) {
-          let value_json = device.val_tpl.match(re_json)[1];
-          payload = node.devices_values[device?.stat_t]?.[value_json] ?? null;
-        } else {
-          payload = node.devices_values[device?.stat_t] ?? null;
-        }
-      }
-
-      return payload;
-    };
-
     node.getDevices = (callback, refresh = false) => {
       let count = 0;
       let watchdog = null;
@@ -112,13 +96,24 @@ module.exports = function (RED) {
         // build device
         device.component = getComponentTopic(topic);
         device.current_status = setStatus(device);
-        device.current_value = setValue(device);
-        device.homekit = Helper.payload2homekit(device);
 
-        // push only support component
-        if (device.component == "sensor" || device.component == "switch") {
-          node.devices.push(device);
+        // support component
+        switch (device?.component) {
+          case "sensor":
+            device.current_value = Sensor.setValue(node.devices_values, device);
+            device.homekit = Sensor.setHomekit(device);
+            device.support = true;
+            break;
+          case "switch":
+            device.current_value = Switch.setValue(node.devices_values, device);
+            device.homekit = Switch.setHomekit(device);
+            device.support = true;
+            break;
+          default:
+            break;
         }
+
+        node.devices.push(device);
         count++;
       };
 
@@ -190,9 +185,21 @@ module.exports = function (RED) {
         if (!key) continue;
 
         // set value device
-        node.devices[i].current_status = setStatus(node.devices[i]);
-        node.devices[i].current_value = setValue(node.devices[i]);
-        node.devices[i].homekit = Helper.payload2homekit(node.devices[i]);
+        let device = node.devices[i];
+        device.current_status = setStatus(device);
+        switch (device?.component) {
+          case "sensor":
+            device.current_value = Sensor.setValue(node.devices_values, device);
+            device.homekit = Sensor.setHomekit(device);
+            break;
+          case "switch":
+            device.current_value = Switch.setValue(node.devices_values, device);
+            device.homekit = Switch.setHomekit(device);
+            break;
+          default:
+            break;
+        }
+        node.devices[i] = device;
 
         node.emit("onMessage", node.devices[i]);
       }

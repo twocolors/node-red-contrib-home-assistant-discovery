@@ -2,6 +2,7 @@ module.exports = function (RED) {
   "use strict";
 
   const Helper = require("../lib/discovery-helper");
+  const Switch = require("../lib/component/switch");
 
   function HADiscoveryOut(config) {
     RED.nodes.createNode(this, config);
@@ -101,10 +102,10 @@ module.exports = function (RED) {
 
         switch (device?.component) {
           case "switch":
-            node.server.broker?.client?.publish(device?.cmd_t, payload, {
+            Switch.send(node.server, device, payload, {
               retain: node.retain,
               qos: node.qos,
-            });
+            })
             break;
           default:
             node.warn("this Component not support");

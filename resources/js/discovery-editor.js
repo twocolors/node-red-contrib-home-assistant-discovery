@@ -84,7 +84,7 @@ class DiscoveryEditor {
             let ids = elm.dev.ids;
             let name = elm.dev.name;
             let mdl = elm.dev.mdl;
-            if (!devices[ids]) {
+            if (!devices[ids] && elm.support) {
               devices[ids] = ids;
               return $("<option>").val(ids).text(`${name} (${mdl})`);
             }
@@ -112,7 +112,7 @@ class DiscoveryEditor {
         let uniq_id = elm.uniq_id;
         let ids = elm.dev.ids;
 
-        if ($dev_id == ids) {
+        if ($dev_id == ids && elm.support) {
           $("<option>")
             .val(uniq_id)
             .text(name + (unit_of_meas ? ", " + unit_of_meas : ""))

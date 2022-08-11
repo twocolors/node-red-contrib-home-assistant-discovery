@@ -102,7 +102,7 @@ module.exports = function (RED) {
 
         switch (device?.component) {
           case "switch":
-            Switch.send(node.server, device, payload, {
+            Switch.sendMQTT(node.server, device, payload, {
               retain: node.retain,
               qos: node.qos,
             })

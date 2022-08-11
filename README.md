@@ -30,6 +30,7 @@ Support components (list test):
 
 ### 0.0.3
 - tiny png image for README
+- save value if not response list devices
 
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/flow.png">
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/server.png">

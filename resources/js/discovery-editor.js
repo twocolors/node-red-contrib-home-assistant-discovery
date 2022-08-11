@@ -72,9 +72,9 @@ class DiscoveryEditor {
     let that = this;
 
     await that.getDevices();
-    if (that.devices.length > 0) {
-      let $val = that.dev_id || that.getDevIdInput().val();
 
+    let $val = that.dev_id || that.getDevIdInput().val();
+    if (that.devices.length > 0) {
       let devices = {};
       that
         .getDevIdInput()
@@ -92,15 +92,23 @@ class DiscoveryEditor {
         )
         .val($val)
         .prop("disabled", false);
+    } else {
+      that
+        .getDevIdInput()
+        .append($("<option>").val($val).text($val))
+        .val($val)
+        .prop("disabled", true);
     }
   }
 
   async buildPayload() {
     let that = this;
-    let $dev_id = that.dev_id || that.getDevIdInput().val();
-    if (that.devices.length > 0 && $dev_id) {
-      let $val = that.uniq_id || that.getUniqIdInput().val();
 
+    let $dev_id = that.dev_id || that.getDevIdInput().val();
+    if (!$dev_id) return;
+
+    let $val = that.uniq_id || that.getUniqIdInput().val();
+    if (that.devices.length > 0) {
       let discovery = $("<optgroup>").attr("label", "Discovery");
       let homekit = $("<optgroup>").attr("label", "HomeKit");
 
@@ -133,13 +141,13 @@ class DiscoveryEditor {
         }
       });
 
-      // if (that.config.allow_out) {
-      //   that
-      //     .getUniqIdInput()
-      //     .prepend($("<option>").val("msg.topic").text("msg.topic"));
-      // }
-
       that.getUniqIdInput().val($val).prop("disabled", false);
+    } else {
+      that
+        .getUniqIdInput()
+        .append($("<option>").val($val).text($val))
+        .val($val)
+        .prop("disabled", true);
     }
   }
 

@@ -26,6 +26,11 @@ Support components (list test):
 * switch (ESPHome)
 * sensor (ESPHome, Zigbee2MQTT)
 
+## Changelog
+
+### 0.0.3
+- tiny png image for README
+
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/flow.png">
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/server.png">
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/in.png">

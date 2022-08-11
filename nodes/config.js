@@ -93,7 +93,7 @@ module.exports = function (RED) {
           break;
       }
       return device;
-    }
+    };
 
     node.getDevices = (callback, refresh = false) => {
       let count = 0;
@@ -198,6 +198,11 @@ module.exports = function (RED) {
         // set value device
         node.devices[i] = _device(node.devices[i]);
 
+        if (
+          node.devices[i].current_status === null ||
+          node.devices[i].current_value === null
+        )
+          continue;
         node.emit("onMessage", node.devices[i]);
       }
     };

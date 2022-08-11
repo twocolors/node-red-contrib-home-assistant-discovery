@@ -25,6 +25,7 @@ Available nodes are:
 Support components (list test):
 * switch (ESPHome)
 * sensor (ESPHome, Zigbee2MQTT)
+* binary_sensor (Zigbee2MQTT)
 
 ## Changelog
 
@@ -33,6 +34,7 @@ Support components (list test):
 - save value if not response list devices
 - more examples
 - support NO_RESPONSE on HomeKit device
+- support Binary Sensor (test in Zigbee2MQTT on MCCGQ01LM)
 
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/flow.png">
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/server.png">

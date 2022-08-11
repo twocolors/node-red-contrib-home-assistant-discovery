@@ -4,6 +4,7 @@ module.exports = function (RED) {
   const Helper = require("../lib/discovery-helper");
   const Sensor = require("../lib/component/sensor");
   const Switch = require("../lib/component/switch");
+  const BinarySensor = require("../lib/component/binarysensor");
 
   function HADiscovery(config) {
     RED.nodes.createNode(this, config);
@@ -69,6 +70,31 @@ module.exports = function (RED) {
       return node.devices_values[device?.avty_t] ?? null;
     };
 
+    let _device = (device) => {
+      device.current_status = setStatus(device);
+
+      switch (device?.component) {
+        case "sensor":
+          device.current_value = Sensor.setValue(node.devices_values, device);
+          device.homekit = Sensor.setHomekit(device);
+          device.support = true;
+          break;
+        case "switch":
+          device.current_value = Switch.setValue(node.devices_values, device);
+          device.homekit = Switch.setHomekit(device);
+          device.support = true;
+          break;
+        case "binary_sensor":
+          device.current_value = BinarySensor.setValue(node.devices_values, device);
+          device.homekit = BinarySensor.setHomekit(device);
+          device.support = true;
+          break;
+        default:
+          break;
+      }
+      return device;
+    }
+
     node.getDevices = (callback, refresh = false) => {
       let count = 0;
       let watchdog = null;
@@ -93,25 +119,10 @@ module.exports = function (RED) {
         }
         // -bad hack for z2m
 
-        // build device
+        // build component
         device.component = getComponentTopic(topic);
-        device.current_status = setStatus(device);
-
-        // support component
-        switch (device?.component) {
-          case "sensor":
-            device.current_value = Sensor.setValue(node.devices_values, device);
-            device.homekit = Sensor.setHomekit(device);
-            device.support = true;
-            break;
-          case "switch":
-            device.current_value = Switch.setValue(node.devices_values, device);
-            device.homekit = Switch.setHomekit(device);
-            device.support = true;
-            break;
-          default:
-            break;
-        }
+        // set value device
+        device = _device(device);
 
         node.devices.push(device);
         count++;
@@ -185,21 +196,7 @@ module.exports = function (RED) {
         if (!key) continue;
 
         // set value device
-        let device = node.devices[i];
-        device.current_status = setStatus(device);
-        switch (device?.component) {
-          case "sensor":
-            device.current_value = Sensor.setValue(node.devices_values, device);
-            device.homekit = Sensor.setHomekit(device);
-            break;
-          case "switch":
-            device.current_value = Switch.setValue(node.devices_values, device);
-            device.homekit = Switch.setHomekit(device);
-            break;
-          default:
-            break;
-        }
-        node.devices[i] = device;
+        node.devices[i] = _device(node.devices[i]);
 
         node.emit("onMessage", node.devices[i]);
       }

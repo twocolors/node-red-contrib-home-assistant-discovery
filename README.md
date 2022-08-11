@@ -36,6 +36,8 @@ Support components (list test):
 - support NO_RESPONSE on HomeKit device
 - support Binary Sensor (test in Zigbee2MQTT on MCCGQ01LM)
 
+## Pictures
+
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/flow.png">
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/server.png">
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/in.png">

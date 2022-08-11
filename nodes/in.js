@@ -68,10 +68,22 @@ module.exports = function (RED) {
           }
         }
 
+        // save value
+        node.current_value = device.current_value;
+        node.current_status = device.current_status;
+
+        // format payload
         let payload = device.current_value;
         if (node.homekit) {
-          if (device.homekit[node.homekit]) {
-            payload = device.homekit[node.homekit];
+          let homekit = device.homekit[node.homekit];
+          if (typeof homekit !== "undefined") {
+            if (device.current_status != "offline") {
+              payload = homekit;
+            } else {
+              payload = Object.keys(homekit).forEach(
+                (key) => (homekit[key] = "NO_RESPONSE")
+              );
+            }
           } else {
             return;
           }
@@ -83,8 +95,6 @@ module.exports = function (RED) {
           device: device,
         });
 
-        node.current_value = device.current_value;
-        node.current_status = device.current_status;
       }
     };
 

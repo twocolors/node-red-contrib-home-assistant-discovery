@@ -47,6 +47,16 @@ class DiscoveryEditor {
         that.dev_id = that.getDevIdInput().val();
         that.build();
       });
+    that
+      .getUniqIdInput()
+      .off("change")
+      .on("change", () => {
+        let $name = $("#node-input-name").val();
+        let $selected = $("#node-input-uniq_id option:selected").text();
+        if (!$name && $selected) {
+          $("#node-input-name").val($selected);
+        }
+      });
   }
 
   async getDevices() {
@@ -151,6 +161,10 @@ class DiscoveryEditor {
         .val($val)
         .prop("disabled", true);
     }
+  }
+
+  getNameInput() {
+    return $("#node-input-name");
   }
 
   getServerInput() {

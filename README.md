@@ -32,6 +32,7 @@ Support components (list test):
 ### 0.0.5
 - fix "start up message"
 - fix 404 error on get list devices
+- node name if empty
 ### 0.0.3
 - tiny png image for README
 - save value if not response list devices

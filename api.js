@@ -19,7 +19,7 @@ module.exports = function (RED) {
         }
       }, force);
     } else {
-      res.status(404).end();
+      res.json([]);
     }
   });
 

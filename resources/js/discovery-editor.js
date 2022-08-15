@@ -62,8 +62,8 @@ class DiscoveryEditor {
           that.refresh = false;
           that.devices = data;
         })
-        .fail(function (err) {
-          RED.notify(err.responseText, "error");
+        .fail(function (jqxhr, textStatus, error) {
+          RED.notify(`Request: ${textStatus}, ${error}`, "error");
         });
     }
   }
@@ -71,10 +71,12 @@ class DiscoveryEditor {
   async buildDevices() {
     let that = this;
 
-    await that.getDevices();
+    try {
+      await that.getDevices();
+    } catch (_) {}
 
     let $val = that.dev_id || that.getDevIdInput().val();
-    if (that.devices.length > 0) {
+    if (that.devices !== null && that.devices.length > 0) {
       let devices = {};
       that
         .getDevIdInput()
@@ -108,7 +110,7 @@ class DiscoveryEditor {
     if (!$dev_id) return;
 
     let $val = that.uniq_id || that.getUniqIdInput().val();
-    if (that.devices.length > 0) {
+    if (that.devices !== null && that.devices.length > 0) {
       let discovery = $("<optgroup>").attr("label", "Discovery");
       let homekit = $("<optgroup>").attr("label", "HomeKit");
 

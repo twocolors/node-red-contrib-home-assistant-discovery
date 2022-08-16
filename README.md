@@ -30,6 +30,7 @@ Support components (list test):
 ## Changelog
 
 ### 0.0.6
+- icon like mqtt
 - fix "setMaxListeners"
 - fix "homekit NO_RESPONSE"
 

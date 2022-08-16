@@ -15,6 +15,7 @@ module.exports = function (RED) {
     let node = this;
     node.config = config;
     node.broker = broker;
+    node.setMaxListeners(0);
 
     node.devices = [];
     node.devices_values = {};

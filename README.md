@@ -30,6 +30,7 @@ Support components (list test):
 ## Changelog
 
 ### 0.0.6
+- fix "setMaxListeners"
 - fix "homekit NO_RESPONSE"
 
 ### 0.0.5

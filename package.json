@@ -3,7 +3,7 @@
   "license": "GPL",
   "name": "node-red-contrib-home-assistant-discovery",
   "description": "Nodes for controlling Home Assistant MQTT Discovery devices in Node-RED",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "node-red": {
     "version": ">=2.2.0",
     "nodes": {

@@ -75,13 +75,11 @@ module.exports = function (RED) {
         // format payload
         let payload = device.current_value;
         if (node.homekit) {
-          let homekit = device.homekit[node.homekit];
-          if (typeof homekit !== "undefined") {
-            if (device.current_status != "offline") {
-              payload = homekit;
-            } else {
-              payload = Object.keys(homekit).forEach(
-                (key) => (homekit[key] = "NO_RESPONSE")
+          payload = device.homekit[node.homekit];
+          if (typeof payload !== "undefined") {
+            if (device.current_status == "offline") {
+              Object.keys(payload).forEach(
+                (key) => (payload[key] = "NO_RESPONSE")
               );
             }
           } else {

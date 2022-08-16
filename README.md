@@ -29,6 +29,9 @@ Support components (list test):
 
 ## Changelog
 
+### 0.0.6
+- fix "homekit NO_RESPONSE"
+
 ### 0.0.5
 - fix "start up message"
 - fix 404 error on get list devices

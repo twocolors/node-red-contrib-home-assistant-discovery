@@ -8,7 +8,7 @@
     "version": ">=2.2.0",
     "nodes": {
       "api": "api.js",
-      "config": "nodes/config.js",
+      "server": "nodes/server.js",
       "in": "nodes/in.js",
       "out": "nodes/out.js"
     }

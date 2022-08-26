@@ -3,13 +3,7 @@ class DiscoveryEditor {
     this.node = node;
     this.refresh = false;
     this.devices = null;
-
-    this.config = Object.assign(
-      {
-        allow_out: false,
-      },
-      config
-    );
+    this.config = config;
     this.dev_id = node.dev_id;
     this.uniq_id = node.uniq_id;
 
@@ -139,7 +133,7 @@ class DiscoveryEditor {
             .appendTo(discovery);
           that.getUniqIdInput().append(discovery);
 
-          if (!that.config.allow_out) {
+          if (that.node.type == "ha-discovery-in") {
             if (elm.homekit) {
               $.each(elm.homekit, function (index) {
                 $("<option>")

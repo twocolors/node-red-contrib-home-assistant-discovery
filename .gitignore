@@ -2,6 +2,8 @@
 *~
 !.gitignore
 !.github
+!.eslintrc.js
+!.prettierrc.js
 
 # node
 package-lock.json

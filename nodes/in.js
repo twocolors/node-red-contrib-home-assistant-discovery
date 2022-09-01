@@ -1,5 +1,5 @@
-module.exports = function (RED) {
-  "use strict";
+module.exports = (RED) => {
+  'use strict';
 
   function HADiscoveryIn(config) {
     const self = this;
@@ -17,53 +17,45 @@ module.exports = function (RED) {
 
     self.first = false;
 
-    const getUniqId = function () {
-      return self.config.uniq_id.split(":")[0];
+    const getUniqId = () => {
+      return self.config.uniq_id.split(':')[0];
     };
 
-    const getHomekit = function () {
-      return self.config.uniq_id.split(":")[1];
+    const getHomekit = () => {
+      return self.config.uniq_id.split(':')[1];
     };
 
-    const thisDevice = function (device = {}) {
+    const thisDevice = (device = {}) => {
       return (
-        getUniqId() == device.uniq_id &&
+        getUniqId() === device.uniq_id &&
         device.dev &&
         device.dev.ids &&
-        self.config.dev_id == device.dev.ids
+        self.config.dev_id === device.dev.ids
       );
     };
 
-    const setStatus = function (status, timeout) {
+    const clearStatus = (delay = 0) => {
+      setTimeout(() => {
+        if (self.current_status) {
+          self.status({
+            fill: self.current_status === 'online' ? 'green' : 'red',
+            shape: 'dot',
+            text: self.current_status,
+          });
+        } else {
+          self.status({});
+        }
+      }, delay);
+    };
+
+    const setStatus = (status, timeout) => {
       self.status(status);
       if (timeout) {
         clearStatus(timeout);
       }
     };
 
-    const clearStatus = function (delay) {
-      const _setStatus = function () {
-        if (self.current_status) {
-          setStatus({
-            fill: self.current_status == "online" ? "green" : "red",
-            shape: "dot",
-            text: self.current_status,
-          });
-        } else {
-          setStatus({});
-        }
-      };
-
-      if (delay) {
-        setTimeout(function () {
-          _setStatus();
-        }, delay);
-      } else {
-        _setStatus();
-      }
-    };
-
-    const onMessage = function (device) {
+    const onMessage = (device) => {
       if (!thisDevice(device)) {
         return;
       }
@@ -75,8 +67,8 @@ module.exports = function (RED) {
         }
 
         setStatus({
-          fill: device.current_status == "online" ? "green" : "red",
-          shape: "dot",
+          fill: device.current_status === 'online' ? 'green' : 'red',
+          shape: 'dot',
           text: device.current_status,
         });
       }
@@ -105,15 +97,15 @@ module.exports = function (RED) {
         self.current_status = device.current_status;
 
         // format payload
+        const homekit = getHomekit();
         let payload = device.current_value;
-        let homekit = getHomekit();
         if (homekit) {
           payload = device.homekit[homekit];
           if (payload !== undefined) {
-            if (device.current_status == "offline") {
-              Object.keys(payload).forEach(
-                (key) => (payload[key] = "NO_RESPONSE")
-              );
+            if (device.current_status === 'offline') {
+              Object.keys(payload).forEach((key) => {
+                payload[key] = 'NO_RESPONSE';
+              });
             }
           } else {
             return;
@@ -121,37 +113,37 @@ module.exports = function (RED) {
         }
 
         // bad hack for first key
-        let key = Object.keys(payload).shift();
+        const key = Object.keys(payload).shift();
         setStatus(
           {
-            fill: "yellow",
-            shape: "dot",
-            text: homekit ? key + ": " + payload[key] : payload,
+            fill: 'yellow',
+            shape: 'dot',
+            text: homekit ? `${key}: ${payload[key]}` : payload,
           },
           3000
         );
 
         self.send({
-          payload: payload,
+          payload,
           payload_raw: device.current_value,
-          device: device,
+          device,
         });
       }
     };
 
     setStatus({
-      fill: "blue",
-      shape: "dot",
-      text: "waiting",
+      fill: 'blue',
+      shape: 'dot',
+      text: 'waiting',
     });
 
     self.onMessage = (msg) => onMessage(msg);
-    self.serverNode.on("onMessage", self.onMessage);
-    self.on("close", function (_, done) {
-      self.serverNode.removeListener("onMessage", self.onMessage);
+    self.serverNode.on('onMessage', self.onMessage);
+    self.on('close', (_, done) => {
+      self.serverNode.removeListener('onMessage', self.onMessage);
       done();
     });
   }
 
-  RED.nodes.registerType("ha-discovery-in", HADiscoveryIn);
+  RED.nodes.registerType('ha-discovery-in', HADiscoveryIn);
 };

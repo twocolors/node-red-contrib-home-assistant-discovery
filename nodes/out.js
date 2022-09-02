@@ -1,125 +1,109 @@
-module.exports = function (RED) {
-  "use strict";
+module.exports = (RED) => {
+  'use strict';
 
-  const Helper = require("../lib/discovery-helper");
-  const Switch = require("../lib/component/switch");
+  const Switch = require('../lib/component/switch');
 
   function HADiscoveryOut(config) {
-    RED.nodes.createNode(this, config);
+    const self = this;
+    self.config = config;
 
-    let serverNode = RED.nodes.getNode(config.server);
-    if (!serverNode) return;
-    if (!config.dev_id || !config.uniq_id) return;
+    RED.nodes.createNode(self, config);
 
-    let node = this;
-    node.cleanTimer = null;
-    node.server = serverNode;
-    node.dev_id = config.dev_id;
-    node.uniq_id = config.uniq_id;
-    node.qos = Number(config.qos || 0);
-    node.retain = config.retain === true || config.retain === "true" || false;
-    node.payload = config.payload;
-    node.payload_type = config.payload_type; // 'msg', 'flow', 'global', 'env', 'str', 'num', 'json'
+    try {
+      self.serverNode = RED.nodes.getNode(self.config.server);
+    } catch (_) {}
 
-    node.current_status = null;
+    if (!self.serverNode || !self.config.dev_id || !self.config.uniq_id) {
+      return;
+    }
 
-    let isDevice = (obj) => {
-      return node.dev_id == obj?.dev?.ids && node.uniq_id == obj?.uniq_id;
+    const thisDevice = (device = {}) => {
+      return (
+        self.config.uniq_id === device.uniq_id &&
+        device.dev &&
+        device.dev.ids &&
+        self.config.dev_id === device.dev.ids
+      );
     };
 
-    node.onStatus = (obj) => {
-      if (obj) {
-        node.status({
-          fill: `${obj.color}`,
-          shape: "dot",
-          text: `${obj.text}`,
-        });
+    const clearStatus = (delay = 0) => {
+      setTimeout(() => {
+        if (self.current_status) {
+          self.status({
+            fill: self.current_status === 'online' ? 'green' : 'red',
+            shape: 'dot',
+            text: self.current_status,
+          });
+        } else {
+          self.status({});
+        }
+      }, delay);
+    };
+
+    const setStatus = (status, timeout) => {
+      self.status(status);
+      if (timeout) {
+        clearStatus(timeout);
       }
     };
 
-    node.onMessage = (device) => {
-      if (!isDevice(device)) return;
+    const onMessage = (device) => {
+      if (!thisDevice(device)) {
+        return;
+      }
 
       // update status
-      if (device.current_status !== null) {
-        if (node.current_status === null) {
-          node.current_status = device.current_status;
-        }
+      if (device.current_status !== undefined) {
+        if (self.current_status !== device.current_status) {
+          setStatus({
+            fill: device.current_status === 'online' ? 'green' : 'red',
+            shape: 'dot',
+            text: device.current_status,
+          });
 
-        node.onStatus({
-          color: device.current_status == "online" ? "green" : "red",
-          text: device.current_status,
-        });
+          self.current_status = device.current_status;
+        }
       }
     };
 
-    node.onInput = (message) => {
-      clearTimeout(node.cleanTimer);
+    const onInput = (message) => {
+      const payload = RED.util.evaluateNodeProperty(
+        self.config.payload,
+        self.config.payload_type,
+        self,
+        message
+      );
 
-      let payload;
-      switch (node.payload_type) {
-        case "flow":
-        case "global":
-        case "env":
-          payload = RED.util.evaluateNodeProperty(
-            node.payload,
-            node.payload_type,
-            node,
-            message
-          );
-          break;
-        case "str":
-          payload = node.payload;
-          break;
-        case "num":
-          payload = parseInt(node.payload);
-          break;
-        case "json":
-          if (Helper.isJson(node.payload)) {
-            payload = JSON.parse(node.payload);
-          } else {
-            node.warn("Incorrect payload. Waiting for valid JSON");
-            node.onStatus({
-              color: "red",
-              text: "Incorrect payload. Waiting for valid JSON",
-            });
-            node.cleanTimer = setTimeout(() => {
-              node.onStatus({
-                color: node.current_status == "online" ? "green" : "red",
-                text: node.current_status,
-              });
-            }, 3*1000);
-          }
-          break;
-        case "msg":
-        default:
-          payload = message[node.payload];
-          break;
-      }
+      self.serverNode.devices.map((device) => {
+        if (!thisDevice(device)) {
+          return;
+        }
 
-      node.server.devices.map((device) => {
-        if (!isDevice(device)) return;
+        if (device.component === 'switch') {
+          setStatus({ fill: 'yellow', shape: 'dot', text: `${payload}` }, 3000);
 
-        switch (device?.component) {
-          case "switch":
-            Switch.sendMQTT(node.server, device, payload, {
-              retain: node.retain,
-              qos: node.qos,
-            })
-            break;
-          default:
-            node.warn("this Component not support");
-            break;
+          Switch.publish(self.serverNode, device, payload, {
+            retain: Number(self.config.qos || 0),
+            qos:
+              self.config.retain === true ||
+              self.config.retain === 'true' ||
+              false,
+          });
+        } else {
+          self.warn('this Component not support');
         }
       });
     };
 
-    node.server.on("onMessage", node.onMessage);
-    node.on("input", node.onInput);
-    node.on("close", () => {
-      node.server.removeListener("onMessage", node.onMessage);
+    self.onMessage = (message) => onMessage(message);
+    self.serverNode.on('onMessage', self.onMessage);
+    self.onInput = (message) => onInput(message);
+    self.on('input', self.onInput);
+    self.on('close', (_, done) => {
+      self.serverNode.removeListener('onMessage', self.onMessage);
+      done();
     });
   }
 
-  RED.nodes.registerType("ha-discovery-out", HADiscoveryOut);
+  RED.nodes.registerType('ha-discovery-out', HADiscoveryOut);
 };

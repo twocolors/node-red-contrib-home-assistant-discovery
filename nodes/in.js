@@ -137,7 +137,7 @@ module.exports = (RED) => {
       text: 'waiting',
     });
 
-    self.onMessage = (msg) => onMessage(msg);
+    self.onMessage = (message) => onMessage(message);
     self.serverNode.on('onMessage', self.onMessage);
     self.on('close', (_, done) => {
       self.serverNode.removeListener('onMessage', self.onMessage);

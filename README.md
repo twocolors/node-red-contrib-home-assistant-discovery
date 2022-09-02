@@ -27,25 +27,6 @@ Support components (list test):
 * sensor (ESPHome, Zigbee2MQTT)
 * binary_sensor (Zigbee2MQTT)
 
-## Changelog
-
-### 0.0.6
-- icon like mqtt
-- fix "setMaxListeners"
-- fix "homekit NO_RESPONSE"
-
-### 0.0.5
-- fix "start up message"
-- fix 404 error on get list devices
-- node name if empty
-
-### 0.0.3
-- tiny png image for README
-- save value if not response list devices
-- more examples
-- support NO_RESPONSE on HomeKit device
-- support Binary Sensor (test in Zigbee2MQTT on MCCGQ01LM)
-
 ## Pictures
 
 <img src="https://github.com/twocolors/node-red-contrib-home-assistant-discovery/raw/main/readme/flow.png">

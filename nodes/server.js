@@ -1,34 +1,34 @@
-module.exports = function (RED) {
-  "use strict";
+module.exports = (RED) => {
+  'use strict';
 
-  const Helper = require("../lib/discovery-helper");
-  const Sensor = require("../lib/component/sensor");
-  const Switch = require("../lib/component/switch");
-  const BinarySensor = require("../lib/component/binarysensor");
+  const Helper = require('../lib/discovery-helper');
 
   function HADiscovery(config) {
-    RED.nodes.createNode(this, config);
+    const self = this;
+    self.config = config;
 
-    let broker = RED.nodes.getNode(config.server);
-    if (!broker) return;
+    RED.nodes.createNode(self, config);
 
-    let node = this;
-    node.config = config;
-    node.broker = broker;
-    node.setMaxListeners(0);
+    try {
+      self.broker = RED.nodes.getNode(self.config.server);
+    } catch (_) {}
 
-    node.devices = [];
-    node.devices_values = {};
+    if (!self.broker) {
+      return;
+    }
 
-    let getTopic = () => {
-      return (node.config?.topic ?? "").replace(/[\/+#]+$/g, "");
+    self.setMaxListeners(0);
+    self.devices_values = [];
+
+    const getTopic = () => {
+      return (self.config.topic || '').replace(/[/+#]+$/g, '');
     };
 
-    let buildTopic = (path) => {
-      return getTopic() + (path ?? "");
+    const buildTopic = (topic) => {
+      return getTopic() + topic;
     };
 
-    let parserTopic = (topic) => {
+    const parserTopic = (topic) => {
       // <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
       // Home Assistant
       // homeassistant/binary_sensor/garden/config
@@ -36,13 +36,13 @@ module.exports = function (RED) {
       // homeassistant/binary_sensor/bathroom-fan/status/config
       // zigbee2mqtt
       // homeassistant/binary_sensor/0x00158d000392b2df/contact/config
-      let parts = topic.split("/");
+      const parts = topic.split('/');
 
       if (parts.length === 4) {
         return {
           prefix: parts[0],
           component: parts[1],
-          node_id: "",
+          node_id: '',
           object_id: parts[2],
           last: parts[3],
         };
@@ -57,168 +57,145 @@ module.exports = function (RED) {
       };
     };
 
-    let isConfigTopic = (topic) => {
-      let parts = parserTopic(topic);
-      return parts.prefix == getTopic() && parts.last == "config";
+    const isConfigTopic = (topic) => {
+      const parts = parserTopic(topic);
+      return parts.prefix === getTopic() && parts.last === 'config';
     };
 
-    let getComponentTopic = (topic) => {
-      let parts = parserTopic(topic);
+    const getComponentTopic = (topic) => {
+      const parts = parserTopic(topic);
       return parts.component;
     };
 
-    let setStatus = (device) => {
-      return node.devices_values[device?.avty_t] ?? null;
-    };
-
-    let _device = (device) => {
-      device.current_status = setStatus(device);
-
-      switch (device?.component) {
-        case "sensor":
-          device.current_value = Sensor.setValue(node.devices_values, device);
-          device.homekit = Sensor.setHomekit(device);
-          device.support = true;
-          break;
-        case "switch":
-          device.current_value = Switch.setValue(node.devices_values, device);
-          device.homekit = Switch.setHomekit(device);
-          device.support = true;
-          break;
-        case "binary_sensor":
-          device.current_value = BinarySensor.setValue(node.devices_values, device);
-          device.homekit = BinarySensor.setHomekit(device);
-          device.support = true;
-          break;
-        default:
-          break;
-      }
-      return device;
-    };
-
-    node.getDevices = (callback, refresh = false) => {
+    const getDevices = (callback, refresh = false) => {
       let count = 0;
       let watchdog = null;
       let timeout = null;
 
-      let onMessageConfig = (topic, message) => {
+      const onMessageConfig = (topic, message) => {
         if (!isConfigTopic(topic)) return;
 
         let payload = message.toString();
         payload = Helper.isJson(payload) ? JSON.parse(payload) : payload;
 
-        if (typeof payload !== "object") return;
+        if (typeof payload !== 'object') return;
 
         let device = Helper.long2shot(payload);
         // +bad hack for z2m
-        if (Array.isArray(device?.dev?.ids)) {
-          device.dev.ids = device.dev.ids[0];
+        if (device.dev && Array.isArray(device.dev.ids)) {
+          const ids = device.dev.ids[0];
+          device.dev.ids = ids;
         }
-        if (Array.isArray(device?.avty)) {
-          device.avty_t = device.avty[0]["topic"];
+        if (Array.isArray(device.avty)) {
+          device.avty_t = device.avty[0].topic;
           delete device.avty;
         }
         // -bad hack for z2m
 
         // build component
         device.component = getComponentTopic(topic);
-        // set value device
-        device = _device(device);
+        device = Helper.buildDevice(device, self.devices_values);
 
-        node.devices.push(device);
-        count++;
+        self.devices.push(device);
+        count += 1;
       };
 
-      let _done = () => {
-        if (node.broker?.client) {
-          node.broker?.client?.unsubscribe(buildTopic("/#"));
-          node.broker?.client?.removeListener("message", onMessageConfig);
+      const done = () => {
+        if (self.broker.client) {
+          self.broker.client.unsubscribe(buildTopic('/#'));
+          self.broker.client.removeListener('message', onMessageConfig);
         }
         clearInterval(watchdog);
         clearTimeout(timeout);
       };
 
-      if (refresh || node.devices?.length === 0) {
-        node.log("MQTT fetch devices ...");
+      if (refresh || self.devices.length === 0) {
+        self.log('MQTT fetch devices ...');
 
-        node.devices = [];
+        self.devices = [];
 
-        node.broker?.client?.subscribe(buildTopic("/#"));
-        node.broker?.client?.on("message", onMessageConfig);
+        self.broker.client.subscribe(buildTopic('/#'));
+        self.broker.client.on('message', onMessageConfig);
 
         let last = 0;
         watchdog = setInterval(() => {
-          if (count == last) {
-            _done();
-            if (typeof callback === "function") {
-              callback(node.devices);
+          if (last === count) {
+            done();
+            if (callback) {
+              try {
+                callback(self.devices);
+              } catch (_) {}
             }
-            return node.devices;
+            return self.devices;
           }
-          count = last;
+          last = count;
         }, 0.5 * 1000);
 
         timeout = setTimeout(() => {
-          _done();
-          node.error(
-            'Error: getDevices timeout, unsubscribe "' + buildTopic("/#") + '"'
+          done();
+          self.error(
+            `Error: getDevices timeout, unsubscribe "${buildTopic('/#')}"`
           );
         }, 5 * 1000);
       } else {
-        node.log("MQTT cache devices ...");
-        if (typeof callback === "function") {
-          callback(node.devices);
+        self.log('MQTT cache devices ...');
+        if (callback) {
+          try {
+            callback(self.devices);
+          } catch (_) {}
         }
-        return node.devices;
+        return self.devices;
       }
     };
 
-    let onConnect = () => {
-      node.getDevices(() => {
-        node.broker?.client?.subscribe("#");
+    self.getDevices = (callback, refresh) => getDevices(callback, refresh);
+    const onConnect = () => {
+      self.getDevices(() => {
+        self.broker.client.subscribe('#');
       }, true);
     };
 
-    let getKeyByValue = (obj, val) => {
+    const getKeyByValue = (obj, val) => {
       return Object.keys(obj).find((key) => obj[key] === val);
     };
 
-    let onMessage = (topic, message) => {
+    const onMessage = (topic, message) => {
       if (isConfigTopic(topic)) return;
 
       let payload = message.toString();
       payload = Helper.isJson(payload) ? JSON.parse(payload) : payload;
 
       // save value
-      node.devices_values[topic] = payload;
+      self.devices_values[topic] = payload;
 
-      for (let i in node.devices) {
-        let key = getKeyByValue(node.devices[i], topic);
-        if (!key) continue;
-
-        // set value device
-        node.devices[i] = _device(node.devices[i]);
-
-        if (
-          node.devices[i].current_status === null ||
-          node.devices[i].current_value === null
-        )
-          continue;
-        node.emit("onMessage", node.devices[i]);
-      }
+      self.devices.forEach((dev) => {
+        let device = dev;
+        const key = getKeyByValue(device, topic);
+        if (key) {
+          device = Helper.buildDevice(device, self.devices_values);
+          if (
+            device.current_status !== undefined &&
+            device.current_value !== undefined
+          ) {
+            self.emit('onMessage', device);
+          }
+        }
+        return device;
+      });
     };
 
-    node.broker?.register(this);
-    node.broker?.client?.on("connect", onConnect);
-    node.broker?.client?.on("message", onMessage);
+    self.broker.register(this);
+    self.broker.client.on('connect', onConnect);
+    self.broker.client.on('message', onMessage);
 
-    node.on("close", () => {
-      if (node.broker?.client) {
-        node.broker?.client?.removeListener("connect", onConnect);
-        node.broker?.client?.removeListener("message", onMessage);
+    self.on('close', (_, done) => {
+      if (self.broker.client) {
+        self.broker.client.removeListener('connect', onConnect);
+        self.broker.client.removeListener('message', onMessage);
       }
+      done();
     });
   }
 
-  RED.nodes.registerType("ha-discovery", HADiscovery);
+  RED.nodes.registerType('ha-discovery', HADiscovery);
 };

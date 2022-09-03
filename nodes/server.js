@@ -73,12 +73,16 @@ module.exports = (RED) => {
       let timeout = null;
 
       const onMessageConfig = (topic, message) => {
-        if (!isConfigTopic(topic)) return;
+        if (!isConfigTopic(topic)) {
+          return;
+        }
 
         let payload = message.toString();
         payload = Helper.isJson(payload) ? JSON.parse(payload) : payload;
 
-        if (typeof payload !== 'object') return;
+        if (typeof payload !== 'object') {
+          return;
+        }
 
         let device = Helper.long2shot(payload);
         // +bad hack for z2m
@@ -160,7 +164,9 @@ module.exports = (RED) => {
     };
 
     const onMessage = (topic, message) => {
-      if (isConfigTopic(topic)) return;
+      if (isConfigTopic(topic)) {
+        return;
+      }
 
       let payload = message.toString();
       payload = Helper.isJson(payload) ? JSON.parse(payload) : payload;
@@ -168,20 +174,22 @@ module.exports = (RED) => {
       // save value
       self.devices_values[topic] = payload;
 
-      self.devices.forEach((dev) => {
-        let device = dev;
-        const key = getKeyByValue(device, topic);
-        if (key) {
-          device = Helper.buildDevice(device, self.devices_values);
-          if (
-            device.current_status !== undefined &&
-            device.current_value !== undefined
-          ) {
-            self.emit('onMessage', device);
+      if (self.devices !== undefined) {
+        self.devices.forEach((dev) => {
+          let device = dev;
+          const key = getKeyByValue(device, topic);
+          if (key) {
+            device = Helper.buildDevice(device, self.devices_values);
+            if (
+              device.current_status !== undefined &&
+              device.current_value !== undefined
+            ) {
+              self.emit('onMessage', device);
+            }
           }
-        }
-        return device;
-      });
+          return device;
+        });
+      }
     };
 
     self.broker.register(this);

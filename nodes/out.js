@@ -79,9 +79,9 @@ module.exports = (RED) => {
           return;
         }
 
-        if (device.component === 'switch') {
-          setStatus({ fill: 'yellow', shape: 'dot', text: `${payload}` }, 3000);
+        setStatus({ fill: 'yellow', shape: 'dot', text: `${payload}` }, 3000);
 
+        if (device.component === 'switch') {
           Switch.publish(self.serverNode, device, payload, {
             retain: Number(self.config.qos || 0),
             qos:
@@ -94,6 +94,12 @@ module.exports = (RED) => {
         }
       });
     };
+
+    setStatus({
+      fill: 'blue',
+      shape: 'dot',
+      text: 'waiting',
+    });
 
     self.onMessage = (message) => onMessage(message);
     self.serverNode.on('onMessage', self.onMessage);

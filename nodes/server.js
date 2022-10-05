@@ -113,7 +113,7 @@ module.exports = (RED) => {
         clearTimeout(timeout);
       };
 
-      if (refresh || self.devices.length === 0) {
+      if (refresh || self.devices === undefined || self.devices.length === 0) {
         self.log('MQTT fetch devices ...');
 
         self.devices = [];

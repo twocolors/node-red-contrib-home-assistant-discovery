@@ -63,14 +63,14 @@ module.exports = (RED) => {
       // update status
       if (device.current_status !== undefined) {
         if (self.current_status === undefined) {
+          setStatus({
+            fill: device.current_status === 'online' ? 'green' : 'red',
+            shape: 'dot',
+            text: device.current_status,
+          });
+
           self.current_status = device.current_status;
         }
-
-        setStatus({
-          fill: device.current_status === 'online' ? 'green' : 'red',
-          shape: 'dot',
-          text: device.current_status,
-        });
       }
 
       // update value

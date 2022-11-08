@@ -85,16 +85,10 @@ module.exports = (RED) => {
         }
 
         let device = Helper.long2shot(payload);
-        // +bad hack for z2m
         if (device.dev && Array.isArray(device.dev.ids)) {
-          const ids = device.dev.ids[0];
+          const ids = device.dev.ids.join('_');
           device.dev.ids = ids;
         }
-        if (Array.isArray(device.avty)) {
-          device.avty_t = device.avty[0].topic;
-          delete device.avty;
-        }
-        // -bad hack for z2m
 
         // build component
         device.component = getComponentTopic(topic);
@@ -160,7 +154,16 @@ module.exports = (RED) => {
     };
 
     const getKeyByValue = (obj, val) => {
-      return Object.keys(obj).find((key) => obj[key] === val);
+      let found;
+      Object.keys(obj).some((key) => {
+        if (obj[key] === val && typeof obj[key] !== 'object') {
+          found = key;
+        } else if (typeof obj[key] === 'object') {
+          found = getKeyByValue(obj[key], val);
+        }
+        if (found) return found;
+      });
+      return found;
     };
 
     const onMessage = (topic, message) => {

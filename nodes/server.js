@@ -156,7 +156,7 @@ module.exports = (RED) => {
     const getKeyByValue = (obj, val) => {
       let found;
       Object.keys(obj).some((key) => {
-        if (obj[key] === val && typeof obj[key] !== 'object') {
+        if (obj[key] === val) {
           found = key;
         } else if (typeof obj[key] === 'object') {
           found = getKeyByValue(obj[key], val);

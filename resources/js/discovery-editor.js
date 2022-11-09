@@ -86,15 +86,17 @@ class DiscoveryEditor {
         .getDevIdInput()
         .empty()
         .append(
-          that.devices.map((elm) => {
-            let ids = elm.dev.ids;
-            let name = elm.dev.name;
-            let mdl = elm.dev.mdl;
-            if (!devices[ids] && elm.support) {
-              devices[ids] = ids;
-              return $("<option>").val(ids).text(`${name} (${mdl})`);
-            }
-          })
+          that.devices
+            .sort((a, b) => (a.dev.name > b.dev.name ? 1 : -1))
+            .map((elm) => {
+              let ids = elm.dev.ids;
+              let name = elm.dev.name;
+              let mdl = elm.dev.mdl;
+              if (!devices[ids] && elm.support) {
+                devices[ids] = ids;
+                return $("<option>").val(ids).text(`${name} (${mdl})`);
+              }
+            })
         )
         .val($val)
         .prop("disabled", false);

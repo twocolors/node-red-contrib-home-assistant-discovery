@@ -16,7 +16,7 @@
 
 Nodes for controlling Home Assistant MQTT Discovery devices in Node-RED
 
-More informations about [MQTT Discovery](https://www.home-assistant.io/docs/mqtt/discovery/)
+More informations about [MQTT Discovery](https://www.home-assistant.io/integrations/mqtt/#mqtt-discovery)
 
 Available nodes are:
 * ha-discovery-in
